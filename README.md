@@ -37,7 +37,7 @@ bool result = model.LoadModel("example.model");
 
 // Run prediction.
 Tensor in(1), out;
-in.data_ = {{0}};
+in.data_ = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
 
 result = model.Apply(&in, &out)
 ```
