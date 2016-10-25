@@ -53,12 +53,33 @@ $ python make_tests.py
 ...
 
 $ make
-...
-$ ./keras_model_test
-...
-Benchmark network loads in 0.023902s
-Benchmark network runs in 0.023261s
+cppcheck --error-exitcode=1 keras_model.cc
+Checking keras_model.cc...
+Checking keras_model.cc: DEBUG...
+g++ --std=c++11 -I. -Wall -Werror -MMD -O3 -mtune=core2 -o keras_model.o -c keras_model.cc
+cppcheck --error-exitcode=1 keras_model_test.cc
+Checking keras_model_test.cc...
+Checking keras_model_test.cc: DEBUG...
+g++ --std=c++11 -I. -Wall -Werror -MMD -O3 -mtune=core2 -o keras_model_test.o -c keras_model_test.cc
+g++ -o keras_model_test keras_model_test.o keras_model.o
 
+$ ./keras_model_test
+TEST dense_1x1
+TEST dense_10x1
+TEST dense_2x2
+TEST dense_10x10
+TEST dense_10x10x10
+TEST conv_2x2
+TEST conv_3x3
+TEST conv_3x3x3
+TEST elu_10
+TEST benchmark
+TEST benchmark
+TEST benchmark
+TEST benchmark
+TEST benchmark
+Benchmark network loads in 0.022415s
+Benchmark network runs in 0.022597s
 ```
 
 # License
