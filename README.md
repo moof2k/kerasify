@@ -15,9 +15,13 @@ Looking for more Keras/C++ libraries? Check out https://github.com/pplonski/kera
 
 # Example
 
-From Python:
+make_model.py:
 
 ```
+import numpy as np
+from keras.models import Sequential
+from keras.layers import Dense
+
 test_x = np.random.rand(10, 10).astype('f')
 test_y = np.random.rand(10).astype('f')
 
@@ -31,21 +35,32 @@ from kerasify import export_model
 export_model(model, 'example.model')
 ```
 
-From C++:
+test.cc:
 
 ```
-// Initialize model.
-KerasModel model;
-bool result = model.LoadModel("example.model");
+#include "keras_model.h"
 
-// Run prediction.
-Tensor in(1), out;
-in.data_ = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
+int main()
+{
+    // Initialize model.
+    KerasModel model;
+    bool result = model.LoadModel("example.model");
 
-result = model.Apply(&in, &out)
+    // Run prediction.
+    Tensor in(1), out;
+    in.data_ = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
+
+    result = model.Apply(&in, &out);
+    return 0;
+}
 ```
 
-Add `keras_model.cc` to your build and you should be good to go.
+To test:
+
+```
+$ python make_model.py
+$ g++ --std=c++11 Wall -Werror -O3 test.cc keras_model.cc
+```
 
 # Unit tests
 
