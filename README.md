@@ -44,6 +44,8 @@ in.data_ = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
 result = model.Apply(&in, &out)
 ```
 
+Add `keras_model.cc` to your build and you should be good to go.
+
 # Unit tests
 
 To run the unit tests, generate the unit test models and then run `keras_model_test`:
