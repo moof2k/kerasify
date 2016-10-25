@@ -8,6 +8,7 @@ Design goals:
 * No external dependencies, standard library, C++11 features OK.
 * Model stored on disk in binary format that can be quickly read.
 * Model stored in memory in contiguous block for better cache performance.
+* Doesn't throw exceptions, returns only bool on error.
 * Unit testable, rigorous unit tests.
 
 Looking for more Keras/C++ libraries? Check out https://github.com/pplonski/keras2cpp/
