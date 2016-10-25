@@ -46,10 +46,12 @@ int main()
     KerasModel model;
     bool result = model.LoadModel("example.model");
 
-    // Run prediction.
-    Tensor in(1), out;
+    // Create a 1D Tensor for input data.
+    Tensor in(1);
     in.data_ = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
 
+    // Run prediction.
+    Tensor out;
     result = model.Apply(&in, &out);
     return 0;
 }
