@@ -61,7 +61,7 @@ To test:
 
 ```
 $ python make_model.py
-$ g++ --std=c++11 Wall -Werror -O3 test.cc keras_model.cc
+$ g++ --std=c++11 -Wall -Werror -O3 test.cc keras_model.cc
 ```
 
 # Unit tests
