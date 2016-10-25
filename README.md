@@ -10,6 +10,8 @@ Design goals:
 * Model stored in memory in contiguous block for better cache performance.
 * Unit testable, rigorous unit tests.
 
+Looking for more Keras/C++ libraries? Check out https://github.com/pplonski/keras2cpp/
+
 # Example
 
 From Python:
@@ -51,6 +53,7 @@ $ python make_tests.py
 ...
 
 $ make
+...
 $ ./keras_model_test
 ...
 Benchmark network loads in 0.023902s
