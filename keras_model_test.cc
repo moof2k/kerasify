@@ -4,19 +4,19 @@
 #include <stdio.h>
 #include <iostream>
 
-#include "dense_1x1_test.h"
-#include "dense_10x1_test.h"
-#include "dense_2x2_test.h"
-#include "dense_10x10_test.h"
-#include "dense_10x10x10_test.h"
-#include "conv_2x2_test.h"
-#include "conv_3x3_test.h"
-#include "conv_3x3x3_test.h"
-#include "elu_10_test.h"
-#include "relu_10_test.h"
-#include "dense_relu_10_test.h"
-#include "conv_softplus_2x2_test.h"
-#include "benchmark_test.h"
+#include "test_dense_1x1.h"
+#include "test_dense_10x1.h"
+#include "test_dense_2x2.h"
+#include "test_dense_10x10.h"
+#include "test_dense_10x10x10.h"
+#include "test_conv_2x2.h"
+#include "test_conv_3x3.h"
+#include "test_conv_3x3x3.h"
+#include "test_elu_10.h"
+#include "test_relu_10.h"
+#include "test_dense_relu_10.h"
+#include "test_conv_softplus_2x2.h"
+#include "test_benchmark.h"
 
 bool tensor_test()
 {

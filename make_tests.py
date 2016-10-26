@@ -42,7 +42,7 @@ bool test_%s(double* load_time, double* apply_time)
     load_timer.Start();
 
     KerasModel model;
-    KASSERT(model.LoadModel("%s_test.model"), "Failed to load model");
+    KASSERT(model.LoadModel("test_%s.model"), "Failed to load model");
 
     *load_time = load_timer.Stop();
 
@@ -70,9 +70,9 @@ def output_testcase(model, test_x, test_y, name, eps):
     predict_y = model.predict(test_x).astype('f')
     print model.summary()
 
-    export_model(model, '%s_test.model' % name)
+    export_model(model, 'test_%s.model' % name)
 
-    with open('%s_test.h' % name, 'w') as f:
+    with open('test_%s.h' % name, 'w') as f:
         x_shape, x_data = c_array(test_x[0])
         y_shape, y_data = c_array(predict_y[0])
 

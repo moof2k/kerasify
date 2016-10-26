@@ -4,3 +4,10 @@
 *.model
 *.pyc
 
+# Ignore generated test data
+test_*.h
+test_*.model
+
+# Ignore generated binaries
+keras_model_test
+

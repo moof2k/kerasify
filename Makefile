@@ -20,6 +20,7 @@ clean:
 	rm -rf *.d
 	rm -rf $(KERAS)
 	rm -rf $(TESTS)
+	rm -rf test_*
 
 -include $(TESTS:%_test=%_test.d)
 -include $(KERAS:%.o=%.d)
