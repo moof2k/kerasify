@@ -46,6 +46,55 @@ bool ReadFloats(std::ifstream* file, float* f, size_t n)
     return true;
 }
 
+bool KerasLayerActivation::LoadLayer(std::ifstream* file)
+{
+    KASSERT(file, "Invalid file stream");
+
+    unsigned int activation = 0;
+    KASSERT(ReadUnsignedInt(file, &activation), "Failed to read activation type");
+
+    switch (activation)
+    {
+        case kLinear:
+            activation_type_ = kLinear;
+            break;
+        case kRelu:
+            activation_type_ = kRelu;
+            break;
+        default:
+            KASSERT(false, "Unsupported activation type %d", activation);
+    }
+
+    return true;
+}
+
+bool KerasLayerActivation::Apply(Tensor* in, Tensor* out)
+{
+    KASSERT(in, "Invalid input");
+    KASSERT(out, "Invalid output");
+
+    *out = *in;
+
+    switch (activation_type_)
+    {
+        case kLinear:
+            break;
+        case kRelu:
+            for (size_t i = 0; i < out->data_.size(); i++)
+            {
+                if(out->data_[i] < 0.0)
+                {
+                    out->data_[i] = 0.0;
+                }
+            }
+            break;
+        default:
+            break;
+    }
+
+    return true;
+}
+
 bool KerasLayerDense::LoadLayer(std::ifstream* file)
 {
     KASSERT(file, "Invalid file stream");
@@ -67,6 +116,8 @@ bool KerasLayerDense::LoadLayer(std::ifstream* file)
 
     biases_.Resize(biases_shape);
     KASSERT(ReadFloats(file, biases_.data_.data(), biases_shape), "Expected biases");
+
+    KASSERT(activation_.LoadLayer(file), "Failed to load activation");
 
     return true;
 }
@@ -98,7 +149,7 @@ bool KerasLayerDense::Apply(Tensor* in, Tensor* out)
         tmp(i) += biases_(i);
     }
 
-    *out = tmp;
+    KASSERT(activation_.Apply(&tmp, out), "Failed to apply activation");
 
     return true;
 }
@@ -239,19 +290,6 @@ bool KerasLayerElu::Apply(Tensor* in, Tensor* out)
     return true;
 }
 
-KerasModel::KerasModel()
-{
-}
-
-KerasModel::~KerasModel()
-{
-    for (unsigned int i = 0; i < layers_.size(); i++)
-    {
-        delete layers_[i];
-    }
-}
-
-
 bool KerasModel::LoadModel(const std::string& filename)
 {
     std::ifstream file(filename.c_str(), std::ios::binary);
@@ -280,6 +318,10 @@ bool KerasModel::LoadModel(const std::string& filename)
                 break;
             case kElu:
                 layer = new KerasLayerElu();
+                break;
+            case kActivation:
+                layer = new KerasLayerActivation();
+                break;
             default:
                 break;
         }

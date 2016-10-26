@@ -2,7 +2,7 @@ import numpy as np
 import pprint
 
 from keras.models import Sequential
-from keras.layers import Convolution2D, Dense, Flatten
+from keras.layers import Convolution2D, Dense, Flatten, Activation
 from keras.layers.advanced_activations import ELU
 
 from kerasify import export_model
@@ -154,7 +154,6 @@ model.add(Dense(1))
 
 output_testcase(model, test_x, test_y, 'conv_3x3x3', '1e-6')
 
-
 ''' Activation ELU '''
 test_x = np.random.rand(1, 10).astype('f')
 test_y = np.random.rand(1, 1).astype('f')
@@ -164,6 +163,25 @@ model.add(ELU(alpha=0.5))
 model.add(Dense(1))
 
 output_testcase(model, test_x, test_y, 'elu_10', '1e-6')
+
+''' Activation relu '''
+test_x = np.random.rand(1, 10).astype('f')
+test_y = np.random.rand(1, 10).astype('f')
+model = Sequential()
+model.add(Dense(10, input_dim=10))
+model.add(Activation('relu'))
+
+output_testcase(model, test_x, test_y, 'relu_10', '1e-6')
+
+''' Dense relu '''
+test_x = np.random.rand(1, 10).astype('f')
+test_y = np.random.rand(1, 10).astype('f')
+model = Sequential()
+model.add(Dense(10, input_dim=10, activation='relu'))
+model.add(Dense(10, input_dim=10, activation='relu'))
+model.add(Dense(10, input_dim=10, activation='relu'))
+
+output_testcase(model, test_x, test_y, 'dense_relu_10', '1e-6')
 
 
 ''' Benchmark '''

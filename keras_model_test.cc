@@ -13,6 +13,8 @@
 #include "conv_3x3_test.h"
 #include "conv_3x3x3_test.h"
 #include "elu_10_test.h"
+#include "relu_10_test.h"
+#include "dense_relu_10_test.h"
 #include "benchmark_test.h"
 
 bool tensor_test()
@@ -118,6 +120,12 @@ int main()
         return 1;
 
     if (!test_elu_10(&load_time, &apply_time))
+        return 1;
+
+    if (!test_relu_10(&load_time, &apply_time))
+        return 1;
+
+    if (!test_dense_relu_10(&load_time, &apply_time))
         return 1;
 
     // Run benchmark 5 times and report duration.

@@ -201,14 +201,39 @@ public:
     std::vector<float> data_;
 };
 
+
 class KerasLayer {
 public:
     KerasLayer() {}
+
     virtual ~KerasLayer() {}
 
     virtual bool LoadLayer(std::ifstream* file) = 0;
 
     virtual bool Apply(Tensor* in, Tensor* out) = 0;
+};
+
+class KerasLayerActivation : public KerasLayer {
+public:
+    enum ActivationType
+    {
+        kLinear = 1,
+        kRelu = 2,
+    };
+
+    KerasLayerActivation()
+    : activation_type_(ActivationType::kLinear)
+    {}
+
+    virtual ~KerasLayerActivation() {}
+
+    virtual bool LoadLayer(std::ifstream* file);
+
+    virtual bool Apply(Tensor* in, Tensor* out);
+
+private:
+
+    ActivationType activation_type_;
 };
 
 class KerasLayerDense : public KerasLayer {
@@ -225,6 +250,8 @@ private:
 
     Tensor weights_;
     Tensor biases_;
+
+    KerasLayerActivation activation_;
 };
 
 class KerasLayerConvolution2d : public KerasLayer {
@@ -282,11 +309,20 @@ public:
         kDense = 1,
         kConvolution2d = 2,
         kFlatten = 3,
-        kElu = 4
+        kElu = 4,
+        kActivation = 5
     };
 
-    KerasModel();
-    ~KerasModel();
+    KerasModel()
+    {}
+
+    ~KerasModel()
+    {
+        for (unsigned int i = 0; i < layers_.size(); i++)
+        {
+            delete layers_[i];
+        }
+    }
 
     bool LoadModel(const std::string& filename);
 
