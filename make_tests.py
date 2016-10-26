@@ -192,7 +192,7 @@ model.add(Convolution2D(16, 7, 7, input_shape=(3, 64, 64)))
 model.add(ELU())
 model.add(Convolution2D(8, 3, 3))
 model.add(Flatten())
-model.add(Dense(1000))
+model.add(Dense(1000, activation='relu'))
 model.add(Dense(10))
 
 output_testcase(model, test_x, test_y, 'benchmark', '1e-3')
