@@ -2,3 +2,5 @@
 *.d
 *.a
 *.model
+*.pyc
+
