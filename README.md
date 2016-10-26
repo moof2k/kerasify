@@ -1,6 +1,6 @@
 # Kerasify
 
-Kerasify is a small library for exporting trained Keras models for use in a C++ application. 
+Kerasify is a small library for running trained Keras models from a C++ application. 
 
 Design goals:
 
