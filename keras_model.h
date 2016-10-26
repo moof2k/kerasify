@@ -219,6 +219,7 @@ public:
     {
         kLinear = 1,
         kRelu = 2,
+        kSoftPlus = 3
     };
 
     KerasLayerActivation()

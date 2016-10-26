@@ -15,7 +15,7 @@
 #include "elu_10_test.h"
 #include "relu_10_test.h"
 #include "dense_relu_10_test.h"
-#include "conv_relu_2x2_test.h"
+#include "conv_softplus_2x2_test.h"
 #include "benchmark_test.h"
 
 bool tensor_test()
@@ -129,7 +129,7 @@ int main()
     if (!test_dense_relu_10(&load_time, &apply_time))
         return 1;
 
-    if (!test_conv_relu_2x2(&load_time, &apply_time))
+    if (!test_conv_softplus_2x2(&load_time, &apply_time))
         return 1;
 
 

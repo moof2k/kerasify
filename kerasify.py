@@ -9,6 +9,7 @@ LAYER_ACTIVATION = 5
 
 ACTIVATION_LINEAR = 1
 ACTIVATION_RELU = 2
+ACTIVATION_SOFTPLUS = 3
 
 def write_floats(file, floats):
     '''
@@ -33,6 +34,8 @@ def export_model(model, filename):
                 f.write(struct.pack('I', ACTIVATION_LINEAR))
             elif activation == 'relu':
                 f.write(struct.pack('I', ACTIVATION_RELU))
+            elif activation == 'softplus':
+                f.write(struct.pack('I', ACTIVATION_SOFTPLUS))
             else:
                 assert False, "Unsupported activation type: %s" % activation
 

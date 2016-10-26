@@ -61,6 +61,9 @@ bool KerasLayerActivation::LoadLayer(std::ifstream* file)
         case kRelu:
             activation_type_ = kRelu;
             break;
+        case kSoftPlus:
+            activation_type_ = kSoftPlus;
+            break;
         default:
             KASSERT(false, "Unsupported activation type %d", activation);
     }
@@ -86,6 +89,12 @@ bool KerasLayerActivation::Apply(Tensor* in, Tensor* out)
                 {
                     out->data_[i] = 0.0;
                 }
+            }
+            break;
+        case kSoftPlus:
+            for (size_t i = 0; i < out->data_.size(); i++)
+            {
+                out->data_[i] = std::log(1.0 + std::exp(out->data_[i]));
             }
             break;
         default:
