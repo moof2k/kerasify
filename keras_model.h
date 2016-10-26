@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2016 Robert W. Rose
+ *
+ * MIT License, see LICENSE file.
+ */
+
 #ifndef KERAS_MODEL_H_
 #define KERAS_MODEL_H_
 

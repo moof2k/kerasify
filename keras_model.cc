@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2016 Robert W. Rose
+ *
+ * MIT License, see LICENSE file.
+ */
+
 #include "keras_model.h"
 
 #include <stdio.h>
 #include <cmath>
-#include <iostream>
 #include <fstream>
 #include <limits>
 #include <utility>
