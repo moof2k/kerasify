@@ -268,6 +268,8 @@ private:
 
     Tensor weights_;
     Tensor biases_;
+
+    KerasLayerActivation activation_;
 };
 
 class KerasLayerFlatten : public KerasLayer {

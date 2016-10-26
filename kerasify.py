@@ -65,6 +65,7 @@ def export_model(model, filename):
 
                 weights = layer.get_weights()[0]
                 biases = layer.get_weights()[1]
+                activation = layer.get_config()['activation']
 
                 # The kernel is accessed in reverse order. To simplify the C side we'll
                 # flip the weight matrix for each kernel.
@@ -83,6 +84,8 @@ def export_model(model, filename):
                 write_floats(f, weights)
                 write_floats(f, biases)
 
+                write_activation(activation)
+
             elif layer_type == 'Flatten':
                 f.write(struct.pack('I', LAYER_FLATTEN))
 
@@ -92,7 +95,7 @@ def export_model(model, filename):
 
             elif layer_type == 'Activation':
                 activation = layer.get_config()['activation']
-                
+
                 f.write(struct.pack('I', LAYER_ACTIVATION))
                 write_activation(activation)
 

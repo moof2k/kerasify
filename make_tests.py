@@ -183,12 +183,21 @@ model.add(Dense(10, input_dim=10, activation='relu'))
 
 output_testcase(model, test_x, test_y, 'dense_relu_10', '1e-6')
 
+''' Conv Relu '''
+test_x = np.random.rand(10, 1, 2, 2).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(Convolution2D(1, 2, 2, input_shape=(1, 2, 2), activation='relu'))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'conv_relu_2x2', '1e-6')
 
 ''' Benchmark '''
 test_x = np.random.rand(1, 3, 64, 64).astype('f')
 test_y = np.random.rand(1, 10).astype('f')
 model = Sequential()
-model.add(Convolution2D(16, 7, 7, input_shape=(3, 64, 64)))
+model.add(Convolution2D(16, 7, 7, input_shape=(3, 64, 64), activation='relu'))
 model.add(ELU())
 model.add(Convolution2D(8, 3, 3))
 model.add(Flatten())

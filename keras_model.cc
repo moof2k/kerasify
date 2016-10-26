@@ -185,6 +185,8 @@ bool KerasLayerConvolution2d::LoadLayer(std::ifstream* file)
     biases_.Resize(biases_shape);
     KASSERT(ReadFloats(file, biases_.data_.data(), biases_shape), "Expected biases");
 
+    KASSERT(activation_.LoadLayer(file), "Failed to load activation");
+
     return true;
 }
 
@@ -240,7 +242,7 @@ bool KerasLayerConvolution2d::Apply(Tensor* in, Tensor* out)
         }
     }
 
-    *out = tmp;
+    KASSERT(activation_.Apply(&tmp, out), "Failed to apply activation");
 
     return true;
 }
