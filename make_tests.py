@@ -2,7 +2,7 @@ import numpy as np
 import pprint
 
 from keras.models import Sequential
-from keras.layers import Convolution2D, Dense, Flatten, Activation
+from keras.layers import Convolution2D, Dense, Flatten, Activation, MaxPooling2D
 from keras.layers.advanced_activations import ELU
 
 from kerasify import export_model
@@ -78,7 +78,6 @@ def output_testcase(model, test_x, test_y, name, eps):
 
         f.write(TEST_CASE % (name, name, x_shape, x_data, y_shape, y_data, name, eps))
 
-    
 
 
 ''' Dense 1x1 '''
@@ -193,11 +192,54 @@ model.add(Dense(1))
 
 output_testcase(model, test_x, test_y, 'conv_softplus_2x2', '1e-6')
 
+
+''' Maxpooling2D 1x1'''
+test_x = np.random.rand(10, 1, 10, 10).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(MaxPooling2D(pool_size=(1, 1), input_shape=(1, 10, 10)))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'maxpool2d_1x1', '1e-6')
+
+''' Maxpooling2D 2x2'''
+test_x = np.random.rand(10, 1, 10, 10).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(MaxPooling2D(pool_size=(2, 2), input_shape=(1, 10, 10)))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'maxpool2d_2x2', '1e-6')
+
+''' Maxpooling2D 3x2x2'''
+test_x = np.random.rand(10, 3, 10, 10).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(MaxPooling2D(pool_size=(2, 2), input_shape=(3, 10, 10)))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'maxpool2d_3x2x2', '1e-6')
+
+''' Maxpooling2D 3x3x3'''
+test_x = np.random.rand(10, 3, 10, 10).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(MaxPooling2D(pool_size=(3, 3), input_shape=(3, 10, 10)))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'maxpool2d_3x3x3', '1e-6')
+
+
 ''' Benchmark '''
-test_x = np.random.rand(1, 3, 64, 64).astype('f')
+test_x = np.random.rand(1, 3, 128, 128).astype('f')
 test_y = np.random.rand(1, 10).astype('f')
 model = Sequential()
-model.add(Convolution2D(16, 7, 7, input_shape=(3, 64, 64), activation='relu'))
+model.add(Convolution2D(16, 7, 7, input_shape=(3, 128, 128), activation='relu'))
+model.add(MaxPooling2D(pool_size=(3, 3)))
 model.add(ELU())
 model.add(Convolution2D(8, 3, 3))
 model.add(Flatten())

@@ -304,6 +304,25 @@ private:
     float alpha_;
 };
 
+class KerasLayerMaxPooling2d : public KerasLayer {
+public:
+    KerasLayerMaxPooling2d()
+    : pool_size_j_(0)
+    , pool_size_k_(0)
+    {}
+
+    virtual ~KerasLayerMaxPooling2d() {}
+
+    virtual bool LoadLayer(std::ifstream* file);
+
+    virtual bool Apply(Tensor* in, Tensor* out);
+
+private:
+
+    unsigned int pool_size_j_;
+    unsigned int pool_size_k_;
+};
+
 class KerasModel {
 public:
 
@@ -313,7 +332,8 @@ public:
         kConvolution2d = 2,
         kFlatten = 3,
         kElu = 4,
-        kActivation = 5
+        kActivation = 5,
+        kMaxPooling2D = 6
     };
 
     KerasModel()

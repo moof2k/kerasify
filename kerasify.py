@@ -6,6 +6,7 @@ LAYER_CONVOLUTION2D = 2
 LAYER_FLATTEN = 3
 LAYER_ELU = 4
 LAYER_ACTIVATION = 5
+LAYER_MAXPOOLING2D = 6
 
 ACTIVATION_LINEAR = 1
 ACTIVATION_RELU = 2
@@ -102,6 +103,14 @@ def export_model(model, filename):
                 f.write(struct.pack('I', LAYER_ACTIVATION))
                 write_activation(activation)
 
+            elif layer_type == 'MaxPooling2D':
+                assert layer.border_mode == 'valid', "Only border_mode=valid is implemented"
+
+                pool_size = layer.get_config()['pool_size']
+
+                f.write(struct.pack('I', LAYER_MAXPOOLING2D))
+                f.write(struct.pack('I', pool_size[0]))
+                f.write(struct.pack('I', pool_size[1]))
                 
 
             else:

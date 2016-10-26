@@ -16,6 +16,10 @@
 #include "test_relu_10.h"
 #include "test_dense_relu_10.h"
 #include "test_conv_softplus_2x2.h"
+#include "test_maxpool2d_1x1.h"
+#include "test_maxpool2d_2x2.h"
+#include "test_maxpool2d_3x2x2.h"
+#include "test_maxpool2d_3x3x3.h"
 #include "test_benchmark.h"
 
 bool tensor_test()
@@ -132,6 +136,17 @@ int main()
     if (!test_conv_softplus_2x2(&load_time, &apply_time))
         return 1;
 
+    if (!test_maxpool2d_1x1(&load_time, &apply_time))
+        return 1;
+
+    if (!test_maxpool2d_2x2(&load_time, &apply_time))
+        return 1;
+
+    if (!test_maxpool2d_3x2x2(&load_time, &apply_time))
+        return 1;
+
+    if (!test_maxpool2d_3x3x3(&load_time, &apply_time))
+        return 1;
 
     // Run benchmark 5 times and report duration.
     double total_load_time = 0.0;
