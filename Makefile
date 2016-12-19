@@ -1,6 +1,6 @@
 
 CC=g++
-CFLAGS=--std=c++11 -I. -Wall -Werror -MMD -O3 -mtune=core2
+CFLAGS=--std=c++11 -I. -Wall -Werror -MMD -Og -g -mtune=core2
 
 KERAS=keras_model.o
 TESTS=keras_model_test
