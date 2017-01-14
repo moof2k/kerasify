@@ -11,6 +11,8 @@
 #include <math.h>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <numeric>
 
 #define KASSERT(x, ...) \
     if (!(x)) { \
@@ -111,6 +113,15 @@ public:
 
         return data_[dims_[1] * i + j];
     }
+    
+    inline float operator()(int i, int j) const
+    {
+        KDEBUG(dims_.size() == 2, "Invalid indexing for tensor");
+        KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
+        KDEBUG(j < dims_[1] && j >= 0, "Invalid j: %d (max %d)", j, dims_[1]);
+
+        return data_[dims_[1] * i + j];
+    }
 
     inline float& operator()(int i, int j, int k)
     {
@@ -196,10 +207,81 @@ public:
         printf(")\n");
     }
 
-
     std::vector<int> dims_;
     std::vector<float> data_;
 };
+
+namespace K {
+    inline void fill(Tensor* tensor, float value) {
+        std::fill(tensor->data_.begin(), tensor->data_.end(), value);
+    }
+    
+    inline Tensor unpack(const Tensor * tensor, int row) {
+        KASSERT(tensor->dims_.size() >= 2, "Invalid tensor");
+        std::vector<int> pack_dims = std::vector<int>(tensor->dims_.begin()+1, tensor->dims_.end());
+        int pack_size = std::accumulate(pack_dims.begin(), pack_dims.end(), 0);
+        
+        std::vector<float>::const_iterator first = tensor->data_.begin() + (row*pack_size);
+        std::vector<float>::const_iterator last = tensor->data_.begin() + (row+1)*pack_size;
+        
+        Tensor x = Tensor();
+        x.dims_ = pack_dims;
+        x.data_ = std::vector<float>(first, last);
+        
+        return x;
+    }
+    
+    inline Tensor select(const Tensor * tensor, int row) {
+        Tensor x = unpack(tensor, row);
+        x.dims_.insert(x.dims_.begin(), 1);
+        
+        return x;
+    }
+    
+    inline Tensor dot(const Tensor & a, const Tensor & b) {
+        KDEBUG(a.dims_.size() == 2, "Invalid tensor");
+        KDEBUG(b.dims_.size() == 2, "Invalid tensor");
+        KASSERT(a.dims_[1] == b.dims_[0], "Cannot multiply with different inner dimensions");
+        
+        Tensor tmp(a.dims_[0], b.dims_[1]);
+        K::fill(&tmp, 0.0);
+        
+        for ( int i = 0; i < a.dims_[0]; i++ ){
+            for ( int j = 0; j < b.dims_[1]; j++) {
+                for ( int k = 0; k < a.dims_[1]; k++ ) {
+                    tmp(i, j) += a(i,k) * b(k,j);
+                }
+            }
+        }
+                
+        return tmp;
+    }
+    
+      
+    inline Tensor add(const Tensor & a, const Tensor & b) {
+        KASSERT(a.dims_== b.dims_, "Cannot add elements with different dimensions");
+        
+        Tensor result;
+        result.dims_ = a.dims_;
+        result.data_.reserve(a.data_.size());
+        
+        std::transform(a.data_.begin(), a.data_.end(), b.data_.begin(), std::back_inserter(result.data_), [](float x, float y){return x+y;});
+        
+        return result;
+    }
+    
+    inline Tensor mult(const Tensor & a, const Tensor & b) {
+        KASSERT(a.dims_== b.dims_, "Cannot multipy elements with different dimensions");
+        
+        Tensor result;
+        result.dims_ = a.dims_;
+        result.data_.reserve(a.data_.size());
+        
+        std::transform(a.data_.begin(), a.data_.end(), b.data_.begin(), std::back_inserter(result.data_), [](float x, float y){return x*y;});
+        
+        return result;
+    }
+}
 
 
 class KerasLayer {
@@ -219,7 +301,10 @@ public:
     {
         kLinear = 1,
         kRelu = 2,
-        kSoftPlus = 3
+        kSoftPlus = 3,
+        kSigmoid = 4,
+	kTanh = 5,
+	kHardSigmoid = 6
     };
 
     KerasLayerActivation()
@@ -323,6 +408,52 @@ private:
     unsigned int pool_size_k_;
 };
 
+class KerasLayerLSTM : public KerasLayer {
+public:
+    KerasLayerLSTM() {}
+
+    virtual ~KerasLayerLSTM() {}
+
+    virtual bool LoadLayer(std::ifstream* file);
+
+    virtual bool Apply(Tensor* in, Tensor* out);
+
+private:
+    bool step(Tensor * x, Tensor *out, Tensor * ht_1, Tensor * ct_1);
+
+    Tensor Wi_;
+    Tensor Ui_;
+    Tensor bi_;
+    Tensor Wf_;
+    Tensor Uf_;
+    Tensor bf_;
+    Tensor Wc_;
+    Tensor Uc_;
+    Tensor bc_;
+    Tensor Wo_;
+    Tensor Uo_;
+    Tensor bo_;
+    
+    KerasLayerActivation innerActivation_;
+    KerasLayerActivation activation_;
+    bool returnSequences;
+};
+
+class KerasLayerEmbedding : public KerasLayer {
+public:
+    KerasLayerEmbedding() {}
+
+    virtual ~KerasLayerEmbedding() {}
+
+    virtual bool LoadLayer(std::ifstream* file);
+
+    virtual bool Apply(Tensor* in, Tensor* out);
+
+private:
+
+    Tensor weights_;
+};
+
 class KerasModel {
 public:
 
@@ -333,13 +464,15 @@ public:
         kFlatten = 3,
         kElu = 4,
         kActivation = 5,
-        kMaxPooling2D = 6
+        kMaxPooling2D = 6,
+        kLSTM = 7,
+        kEmbedding = 8
     };
 
     KerasModel()
     {}
 
-    ~KerasModel()
+    virtual ~KerasModel()
     {
         for (unsigned int i = 0; i < layers_.size(); i++)
         {
@@ -347,9 +480,9 @@ public:
         }
     }
 
-    bool LoadModel(const std::string& filename);
+    virtual bool LoadModel(const std::string& filename);
 
-    bool Apply(Tensor* in, Tensor* out);
+    virtual bool Apply(Tensor* in, Tensor* out);
 
 private:
     std::vector<KerasLayer *> layers_;

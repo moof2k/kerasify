@@ -2,8 +2,10 @@ import numpy as np
 import pprint
 
 from keras.models import Sequential
-from keras.layers import Convolution2D, Dense, Flatten, Activation, MaxPooling2D
+from keras.layers import Convolution2D, Dense, Flatten, Activation, MaxPooling2D, Dropout
+from keras.layers.recurrent import LSTM
 from keras.layers.advanced_activations import ELU
+from keras.layers.embeddings import Embedding
 
 from kerasify import export_model
 
@@ -64,11 +66,11 @@ bool test_%s(double* load_time, double* apply_time)
 '''
 
 def output_testcase(model, test_x, test_y, name, eps):
-    print "Processing %s" % name
+    print("Processing %s" % name)
     model.compile(loss='mean_squared_error', optimizer='adamax')
     model.fit(test_x, test_y, nb_epoch=1, verbose=False)
     predict_y = model.predict(test_x).astype('f')
-    print model.summary()
+    print(model.summary())
 
     export_model(model, 'test_%s.model' % name)
 
@@ -182,6 +184,16 @@ model.add(Dense(10, input_dim=10, activation='relu'))
 
 output_testcase(model, test_x, test_y, 'dense_relu_10', '1e-6')
 
+''' Dense relu '''
+test_x = np.random.rand(1, 10).astype('f')
+test_y = np.random.rand(1, 10).astype('f')
+model = Sequential()
+model.add(Dense(10, input_dim=10, activation='tanh'))
+model.add(Dense(10, input_dim=10, activation='tanh'))
+model.add(Dense(10, input_dim=10, activation='tanh'))
+
+output_testcase(model, test_x, test_y, 'dense_tanh_10', '1e-6')
+
 ''' Conv softplus '''
 test_x = np.random.rand(10, 1, 2, 2).astype('f')
 test_y = np.random.rand(10, 1).astype('f')
@@ -191,6 +203,27 @@ model.add(Flatten())
 model.add(Dense(1))
 
 output_testcase(model, test_x, test_y, 'conv_softplus_2x2', '1e-6')
+
+
+''' Conv hardsigmoid '''
+test_x = np.random.rand(10, 1, 2, 2).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(Convolution2D(1, 2, 2, input_shape=(1, 2, 2), activation='hard_sigmoid'))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'conv_hard_sigmoid_2x2', '1e-6')
+
+''' Conv sigmoid '''
+test_x = np.random.rand(10, 1, 2, 2).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(Convolution2D(1, 2, 2, input_shape=(1, 2, 2), activation='sigmoid'))
+model.add(Flatten())
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'conv_sigmoid_2x2', '1e-6')
 
 
 ''' Maxpooling2D 1x1'''
@@ -232,6 +265,48 @@ model.add(Flatten())
 model.add(Dense(1))
 
 output_testcase(model, test_x, test_y, 'maxpool2d_3x3x3', '1e-6')
+
+''' LSTM simple 7x20 '''
+test_x = np.random.rand(10, 7, 20).astype('f')
+test_y = np.random.rand(10, 3).astype('f')
+model = Sequential()
+model.add(LSTM(3, return_sequences=False, input_shape=(7, 20)))
+
+output_testcase(model, test_x, test_y, 'lstm_simple_7x20', '1e-6')
+
+
+''' LSTM simple stacked 20x9 '''
+test_x = np.random.rand(10, 20, 9).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(LSTM(32, return_sequences=False, input_shape=(20, 9)))
+model.add(Dense(3, input_dim=32, activation='tanh'))
+model.add(Dense(1))
+
+output_testcase(model, test_x, test_y, 'lstm_simple_stacked20x9', '1e-6')
+
+''' LSTM stacked 150x83 '''
+test_x = np.random.rand(10, 150, 83).astype('f')
+test_y = np.random.rand(10, 1).astype('f')
+model = Sequential()
+model.add(LSTM(32, return_sequences=True, input_shape=(150, 83)))
+model.add(LSTM(32, return_sequences=False))
+model.add(Dense(1, activation='sigmoid'))
+
+output_testcase(model, test_x, test_y, 'lstm_stacked150x83', '1e-6')
+
+
+''' Embedding 64 '''
+np.random.seed(10)
+test_x = np.random.randint(100, size=(32, 10)).astype('f')
+test_y = np.random.rand(32, 20).astype('f')
+model = Sequential()
+model.add(Embedding(100, 64, input_length=10))
+model.add(Flatten())
+#model.add(Dropout(0.5))
+model.add(Dense(20, activation='sigmoid'))
+
+output_testcase(model, test_x, test_y, 'embedding64', '1e-6')
 
 
 ''' Benchmark '''

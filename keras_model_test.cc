@@ -15,11 +15,18 @@
 #include "test_elu_10.h"
 #include "test_relu_10.h"
 #include "test_dense_relu_10.h"
+#include "test_dense_tanh_10.h"
 #include "test_conv_softplus_2x2.h"
+#include "test_conv_hard_sigmoid_2x2.h"
+#include "test_conv_sigmoid_2x2.h"
 #include "test_maxpool2d_1x1.h"
 #include "test_maxpool2d_2x2.h"
 #include "test_maxpool2d_3x2x2.h"
 #include "test_maxpool2d_3x3x3.h"
+#include "test_lstm_simple_7x20.h"
+#include "test_lstm_simple_stacked20x9.h"
+#include "test_lstm_stacked150x83.h"
+#include "test_embedding64.h"
 #include "test_benchmark.h"
 
 bool tensor_test()
@@ -88,6 +95,42 @@ bool tensor_test()
             }
         }
     }
+    
+    {
+        Tensor a(2, 2);
+        Tensor b(2, 2);
+        
+        a.data_ = {1.0, 2.0, 3.0, 5.0};
+        b.data_ = {2.0, 5.0, 4.0, 1.0};
+        
+        Tensor result = K::add(a, b);
+        
+        KASSERT( result.data_ == std::vector<float>({3.0, 7.0, 7.0, 6.0}), "Vector add failed" );
+    }
+    
+    {
+        Tensor a(1, 2);
+        Tensor b(2, 1);
+        
+        a.data_ = {1.0, 2.0};
+        b.data_ = {2.0, 5.0};
+        
+        Tensor result = K::dot(a, b);
+        
+        KASSERT( result.data_ == std::vector<float>({12.0}), "Vector mult failed" );
+    }
+    
+    {
+        Tensor a(2, 1);
+        Tensor b(1, 2);
+        
+        a.data_ = {1.0, 2.0};
+        b.data_ = {2.0, 5.0};
+        
+        Tensor result = K::dot(a, b);
+        
+        KASSERT( result.data_ == std::vector<float>({2.0, 5.0, 4.0, 10.0}), "Vector mult failed" );
+    }
 
     return true;
 }
@@ -133,7 +176,16 @@ int main()
     if (!test_dense_relu_10(&load_time, &apply_time))
         return 1;
 
-    if (!test_conv_softplus_2x2(&load_time, &apply_time))
+    if (!test_dense_tanh_10(&load_time, &apply_time))
+        return 1;
+
+     if (!test_conv_softplus_2x2(&load_time, &apply_time))
+          return 1;
+    
+    if (!test_conv_hard_sigmoid_2x2(&load_time, &apply_time))
+        return 1;
+    
+    if (!test_conv_sigmoid_2x2(&load_time, &apply_time))
         return 1;
 
     if (!test_maxpool2d_1x1(&load_time, &apply_time))
@@ -147,6 +199,18 @@ int main()
 
     if (!test_maxpool2d_3x3x3(&load_time, &apply_time))
         return 1;
+    
+    if (!test_lstm_simple_7x20(&load_time, &apply_time))
+          return 1;
+    
+    if (!test_lstm_simple_stacked20x9(&load_time, &apply_time))
+          return 1;
+    
+    if (!test_lstm_stacked150x83(&load_time, &apply_time))
+          return 1;
+   
+    if (!test_embedding64(&load_time, &apply_time))
+          return 1;
 
     // Run benchmark 5 times and report duration.
     double total_load_time = 0.0;
