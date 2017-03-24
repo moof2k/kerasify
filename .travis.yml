@@ -1,0 +1,5 @@
+dist: precise
+language: cpp
+
+script:
+- make static_analysis=false
