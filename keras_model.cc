@@ -615,15 +615,16 @@ bool KerasLayerEmbedding::Apply(Tensor* in, Tensor* out)
 
 bool KerasLayerLSTM::step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
 {
-    Tensor xi = K::add(*x * Wi_, bi_);
-    Tensor xf = K::add(*x * Wf_, bf_);
-    Tensor xc = K::add(*x * Wc_, bc_);
-    Tensor xo = K::add(*x * Wo_, bo_);
+    Tensor xi = K::add(x->Dot(Wi_), bi_);
+    Tensor xf = K::add(x->Dot(Wf_), bf_);
+    Tensor xc = K::add(x->Dot(Wc_), bc_);
+    Tensor xo = K::add(x->Dot(Wo_), bo_);
     
-    Tensor i_ = K::add(xi, *ht_1 * Ui_);
-    Tensor f_ = K::add(xf, *ht_1 * Uf_);
-    Tensor c_ = K::add(xc, *ht_1 * Uc_);
-    Tensor o_ = K::add(xo, *ht_1 * Uo_);
+    Tensor i_ = K::add(xi, ht_1->Dot(Ui_));
+    Tensor f_ = K::add(xf, ht_1->Dot(Uf_));
+    Tensor c_ = K::add(xc, ht_1->Dot(Uc_));
+    Tensor o_ = K::add(xo, ht_1->Dot(Uo_));
+    
     
     Tensor i, f, cc, o;
     

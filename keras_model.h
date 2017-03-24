@@ -170,6 +170,24 @@ public:
         return x;
     }
 
+    Tensor Dot(const Tensor& other) {
+        KDEBUG(dims_.size() == 2, "Invalid tensor dimensions");
+        KDEBUG(other.dims_.size() == 2, "Invalid tensor dimensions");
+        KASSERT(dims_[1] == other.dims_[0], "Cannot multiply with different inner dimensions");
+        
+        Tensor tmp(dims_[0], other.dims_[1]);
+        
+        for ( int i = 0; i < dims_[0]; i++ ) {
+            for ( int j = 0; j < other.dims_[1]; j++) {
+                for ( int k = 0; k < dims_[1]; k++ ) {
+                    tmp(i, j) += (*this)(i,k) * other(k,j);
+                }
+            }
+        }
+                
+        return tmp;
+    }
+
     void Print()
     {
         if (dims_.size() == 1) {
@@ -236,24 +254,6 @@ public:
     std::vector<int> dims_;
     std::vector<float> data_;
 };
-
-inline Tensor operator*(const Tensor & a, const Tensor & b) {
-    KDEBUG(a.dims_.size() == 2, "Invalid tensor dimensions");
-    KDEBUG(b.dims_.size() == 2, "Invalid tensor dimensions");
-    KASSERT(a.dims_[1] == b.dims_[0], "Cannot multiply with different inner dimensions");
-    
-    Tensor tmp(a.dims_[0], b.dims_[1]);
-    
-    for ( int i = 0; i < a.dims_[0]; i++ ) {
-        for ( int j = 0; j < b.dims_[1]; j++) {
-            for ( int k = 0; k < a.dims_[1]; k++ ) {
-                tmp(i, j) += a(i,k) * b(k,j);
-            }
-        }
-    }
-            
-    return tmp;
-}
 
 namespace K {
       
