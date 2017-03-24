@@ -558,7 +558,7 @@ bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out)
     }
     
     for ( int s = 0; s < steps; s++ ) {
-        Tensor x = K::select(in, s);
+        Tensor x = in->Select(s);
         
         KASSERT(step(&x, &lastOutput, &ht_1, &ct_1), "Failed to execute step");
         
@@ -615,16 +615,15 @@ bool KerasLayerEmbedding::Apply(Tensor* in, Tensor* out)
 
 bool KerasLayerLSTM::step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
 {
-    Tensor xi = K::add(K::dot(*x, Wi_), bi_);
-    Tensor xf = K::add(K::dot(*x, Wf_), bf_);
-    Tensor xc = K::add(K::dot(*x, Wc_), bc_);
-    Tensor xo = K::add(K::dot(*x, Wo_), bo_);
+    Tensor xi = K::add(*x * Wi_, bi_);
+    Tensor xf = K::add(*x * Wf_, bf_);
+    Tensor xc = K::add(*x * Wc_, bc_);
+    Tensor xo = K::add(*x * Wo_, bo_);
     
-    Tensor i_ = K::add(xi, K::dot(*ht_1, Ui_));
-    Tensor f_ = K::add(xf, K::dot(*ht_1, Uf_));
-    Tensor c_ = K::add(xc, K::dot(*ht_1, Uc_));
-    Tensor o_ = K::add(xo, K::dot(*ht_1, Uo_));
-    
+    Tensor i_ = K::add(xi, *ht_1 * Ui_);
+    Tensor f_ = K::add(xf, *ht_1 * Uf_);
+    Tensor c_ = K::add(xc, *ht_1 * Uc_);
+    Tensor o_ = K::add(xo, *ht_1 * Uo_);
     
     Tensor i, f, cc, o;
     

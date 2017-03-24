@@ -105,7 +105,7 @@ bool tensor_test()
         
         Tensor result = K::add(a, b);
         
-        KASSERT( result.data_ == std::vector<float>({3.0, 7.0, 7.0, 6.0}), "Vector add failed" );
+        KASSERT(result.data_ == std::vector<float>({3.0, 7.0, 7.0, 6.0}), "Vector add failed");
     }
     
     {
@@ -115,9 +115,9 @@ bool tensor_test()
         a.data_ = {1.0, 2.0};
         b.data_ = {2.0, 5.0};
         
-        Tensor result = K::dot(a, b);
+        Tensor result = a * b;
         
-        KASSERT( result.data_ == std::vector<float>({12.0}), "Vector mult failed" );
+        KASSERT(result.data_ == std::vector<float>({12.0}), "Vector mult failed");
     }
     
     {
@@ -127,9 +127,9 @@ bool tensor_test()
         a.data_ = {1.0, 2.0};
         b.data_ = {2.0, 5.0};
         
-        Tensor result = K::dot(a, b);
+        Tensor result = a * b;
         
-        KASSERT( result.data_ == std::vector<float>({2.0, 5.0, 4.0, 10.0}), "Vector mult failed" );
+        KASSERT(result.data_ == std::vector<float>({2.0, 5.0, 4.0, 10.0}), "Vector mult failed");
     }
 
     return true;

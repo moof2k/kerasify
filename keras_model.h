@@ -148,6 +148,28 @@ public:
         std::fill(data_.begin(), data_.end(), value);
     }
 
+    Tensor Unpack(int row) const {
+        KASSERT(dims_.size() >= 2, "Invalid tensor");
+        std::vector<int> pack_dims = std::vector<int>(dims_.begin()+1, dims_.end());
+        int pack_size = std::accumulate(pack_dims.begin(), pack_dims.end(), 0);
+        
+        std::vector<float>::const_iterator first = data_.begin() + (row * pack_size);
+        std::vector<float>::const_iterator last = data_.begin() + (row + 1) * pack_size;
+        
+        Tensor x = Tensor();
+        x.dims_ = pack_dims;
+        x.data_ = std::vector<float>(first, last);
+        
+        return x;
+    }
+
+    Tensor Select(int row) const {
+        Tensor x = Unpack(row);
+        x.dims_.insert(x.dims_.begin(), 1);
+        
+        return x;
+    }
+
     void Print()
     {
         if (dims_.size() == 1) {
@@ -215,48 +237,25 @@ public:
     std::vector<float> data_;
 };
 
-namespace K {
+inline Tensor operator*(const Tensor & a, const Tensor & b) {
+    KDEBUG(a.dims_.size() == 2, "Invalid tensor dimensions");
+    KDEBUG(b.dims_.size() == 2, "Invalid tensor dimensions");
+    KASSERT(a.dims_[1] == b.dims_[0], "Cannot multiply with different inner dimensions");
     
-    inline Tensor unpack(const Tensor * tensor, int row) {
-        KASSERT(tensor->dims_.size() >= 2, "Invalid tensor");
-        std::vector<int> pack_dims = std::vector<int>(tensor->dims_.begin()+1, tensor->dims_.end());
-        int pack_size = std::accumulate(pack_dims.begin(), pack_dims.end(), 0);
-        
-        std::vector<float>::const_iterator first = tensor->data_.begin() + (row*pack_size);
-        std::vector<float>::const_iterator last = tensor->data_.begin() + (row+1)*pack_size;
-        
-        Tensor x = Tensor();
-        x.dims_ = pack_dims;
-        x.data_ = std::vector<float>(first, last);
-        
-        return x;
-    }
+    Tensor tmp(a.dims_[0], b.dims_[1]);
     
-    inline Tensor select(const Tensor * tensor, int row) {
-        Tensor x = unpack(tensor, row);
-        x.dims_.insert(x.dims_.begin(), 1);
-        
-        return x;
-    }
-    
-    inline Tensor dot(const Tensor & a, const Tensor & b) {
-        KDEBUG(a.dims_.size() == 2, "Invalid tensor");
-        KDEBUG(b.dims_.size() == 2, "Invalid tensor");
-        KASSERT(a.dims_[1] == b.dims_[0], "Cannot multiply with different inner dimensions");
-        
-        Tensor tmp(a.dims_[0], b.dims_[1]);
-        
-        for ( int i = 0; i < a.dims_[0]; i++ ){
-            for ( int j = 0; j < b.dims_[1]; j++) {
-                for ( int k = 0; k < a.dims_[1]; k++ ) {
-                    tmp(i, j) += a(i,k) * b(k,j);
-                }
+    for ( int i = 0; i < a.dims_[0]; i++ ) {
+        for ( int j = 0; j < b.dims_[1]; j++) {
+            for ( int k = 0; k < a.dims_[1]; k++ ) {
+                tmp(i, j) += a(i,k) * b(k,j);
             }
         }
-                
-        return tmp;
     }
-    
+            
+    return tmp;
+}
+
+namespace K {
       
     inline Tensor add(const Tensor & a, const Tensor & b) {
         KASSERT(a.dims_== b.dims_, "Cannot add elements with different dimensions");
