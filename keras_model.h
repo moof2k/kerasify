@@ -7,115 +7,89 @@
 #ifndef KERAS_MODEL_H_
 #define KERAS_MODEL_H_
 
+#include <algorithm>
 #include <chrono>
 #include <math.h>
+#include <numeric>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <numeric>
 
-#define KASSERT(x, ...) \
-    if (!(x)) { \
-        printf("KASSERT: %s(%d): ", __FILE__, __LINE__); \
-        printf(__VA_ARGS__); \
-        printf("\n"); \
-        return false; \
+#define KASSERT(x, ...)                                                        \
+    if (!(x)) {                                                                \
+        printf("KASSERT: %s(%d): ", __FILE__, __LINE__);                       \
+        printf(__VA_ARGS__);                                                   \
+        printf("\n");                                                          \
+        return false;                                                          \
     }
 
-#define KASSERT_EQ(x, y, eps) \
-    if (fabs(x - y) > eps) { printf("KASSERT: Expected %f, got %f\n", y, x); return false; }
+#define KASSERT_EQ(x, y, eps)                                                  \
+    if (fabs(x - y) > eps) {                                                   \
+        printf("KASSERT: Expected %f, got %f\n", y, x);                        \
+        return false;                                                          \
+    }
 
 #ifdef DEBUG
-#define KDEBUG(x, ...) \
-    if (!(x)) { \
-        printf("%s(%d): ", __FILE__, __LINE__); \
-        printf(__VA_ARGS__); \
-        printf("\n"); \
-        exit(-1); \
+#define KDEBUG(x, ...)                                                         \
+    if (!(x)) {                                                                \
+        printf("%s(%d): ", __FILE__, __LINE__);                                \
+        printf(__VA_ARGS__);                                                   \
+        printf("\n");                                                          \
+        exit(-1);                                                              \
     }
 #else
 #define KDEBUG(x, ...) ;
 #endif
 
 class Tensor {
-public:
+  public:
     Tensor() {}
 
-    Tensor(int i)
-    {
-        Resize(i);
-    }
+    Tensor(int i) { Resize(i); }
 
-    Tensor(int i, int j)
-    {
-        Resize(i, j);
-    }
+    Tensor(int i, int j) { Resize(i, j); }
 
-    Tensor(int i, int j, int k)
-    {
-        Resize(i, j, k);
-    }
+    Tensor(int i, int j, int k) { Resize(i, j, k); }
 
-    Tensor(int i, int j, int k, int l)
-    {
-        Resize(i, j, k, l);
-    }
+    Tensor(int i, int j, int k, int l) { Resize(i, j, k, l); }
 
-    void Resize(int i)
-    {
+    void Resize(int i) {
         dims_ = {i};
         data_.resize(i);
     }
 
-    void Resize(int i, int j)
-    {
+    void Resize(int i, int j) {
         dims_ = {i, j};
         data_.resize(i * j);
     }
 
-    void Resize(int i, int j, int k)
-    {
+    void Resize(int i, int j, int k) {
         dims_ = {i, j, k};
         data_.resize(i * j * k);
     }
 
-    void Resize(int i, int j, int k, int l)
-    {
+    void Resize(int i, int j, int k, int l) {
         dims_ = {i, j, k, l};
         data_.resize(i * j * k * l);
     }
 
-    inline void Flatten()
-    {
+    inline void Flatten() {
         KDEBUG(dims_.size() > 0, "Invalid tensor");
 
         int elements = dims_[0];
-        for (unsigned int i = 1; i < dims_.size(); i++)
-        {
+        for (unsigned int i = 1; i < dims_.size(); i++) {
             elements *= dims_[i];
         }
         dims_ = {elements};
     }
 
-    inline float& operator()(int i)
-    {
+    inline float& operator()(int i) {
         KDEBUG(dims_.size() == 1, "Invalid indexing for tensor");
         KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
 
         return data_[i];
     }
 
-    inline float& operator()(int i, int j)
-    {
-        KDEBUG(dims_.size() == 2, "Invalid indexing for tensor");
-        KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
-        KDEBUG(j < dims_[1] && j >= 0, "Invalid j: %d (max %d)", j, dims_[1]);
-
-        return data_[dims_[1] * i + j];
-    }
-    
-    inline float operator()(int i, int j) const
-    {
+    inline float& operator()(int i, int j) {
         KDEBUG(dims_.size() == 2, "Invalid indexing for tensor");
         KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
         KDEBUG(j < dims_[1] && j >= 0, "Invalid j: %d (max %d)", j, dims_[1]);
@@ -123,8 +97,15 @@ public:
         return data_[dims_[1] * i + j];
     }
 
-    inline float& operator()(int i, int j, int k)
-    {
+    inline float operator()(int i, int j) const {
+        KDEBUG(dims_.size() == 2, "Invalid indexing for tensor");
+        KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
+        KDEBUG(j < dims_[1] && j >= 0, "Invalid j: %d (max %d)", j, dims_[1]);
+
+        return data_[dims_[1] * i + j];
+    }
+
+    inline float& operator()(int i, int j, int k) {
         KDEBUG(dims_.size() == 3, "Invalid indexing for tensor");
         KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
         KDEBUG(j < dims_[1] && j >= 0, "Invalid j: %d (max %d)", j, dims_[1]);
@@ -133,8 +114,7 @@ public:
         return data_[dims_[2] * (dims_[1] * i + j) + k];
     }
 
-    inline float& operator()(int i, int j, int k, int l)
-    {
+    inline float& operator()(int i, int j, int k, int l) {
         KDEBUG(dims_.size() == 4, "Invalid indexing for tensor");
         KDEBUG(i < dims_[0] && i >= 0, "Invalid i: %d (max %d)", i, dims_[0]);
         KDEBUG(j < dims_[1] && j >= 0, "Invalid j: %d (max %d)", j, dims_[1]);
@@ -150,78 +130,79 @@ public:
 
     Tensor Unpack(int row) const {
         KASSERT(dims_.size() >= 2, "Invalid tensor");
-        std::vector<int> pack_dims = std::vector<int>(dims_.begin()+1, dims_.end());
+        std::vector<int> pack_dims =
+            std::vector<int>(dims_.begin() + 1, dims_.end());
         int pack_size = std::accumulate(pack_dims.begin(), pack_dims.end(), 0);
-        
-        std::vector<float>::const_iterator first = data_.begin() + (row * pack_size);
-        std::vector<float>::const_iterator last = data_.begin() + (row + 1) * pack_size;
-        
+
+        std::vector<float>::const_iterator first =
+            data_.begin() + (row * pack_size);
+        std::vector<float>::const_iterator last =
+            data_.begin() + (row + 1) * pack_size;
+
         Tensor x = Tensor();
         x.dims_ = pack_dims;
         x.data_ = std::vector<float>(first, last);
-        
+
         return x;
     }
 
     Tensor Select(int row) const {
         Tensor x = Unpack(row);
         x.dims_.insert(x.dims_.begin(), 1);
-        
+
         return x;
     }
 
     Tensor operator+(const Tensor& other) {
-        KASSERT(dims_== other.dims_, "Cannot add tensors with different dimensions");
-        
+        KASSERT(dims_ == other.dims_,
+                "Cannot add tensors with different dimensions");
+
         Tensor result;
         result.dims_ = dims_;
         result.data_.reserve(data_.size());
-        
+
         std::transform(data_.begin(), data_.end(), other.data_.begin(),
-            std::back_inserter(result.data_),
-            [](float x, float y) {
-                return x + y;
-            });
-        
+                       std::back_inserter(result.data_),
+                       [](float x, float y) { return x + y; });
+
         return result;
     }
 
     Tensor Multiply(const Tensor& other) {
-        KASSERT(dims_== other.dims_, "Cannot multiply elements with different dimensions");
-        
+        KASSERT(dims_ == other.dims_,
+                "Cannot multiply elements with different dimensions");
+
         Tensor result;
         result.dims_ = dims_;
         result.data_.reserve(data_.size());
-        
+
         std::transform(data_.begin(), data_.end(), other.data_.begin(),
-            std::back_inserter(result.data_),
-            [](float x, float y) {
-                return x * y;
-            });
-        
+                       std::back_inserter(result.data_),
+                       [](float x, float y) { return x * y; });
+
         return result;
     }
 
     Tensor Dot(const Tensor& other) {
         KDEBUG(dims_.size() == 2, "Invalid tensor dimensions");
         KDEBUG(other.dims_.size() == 2, "Invalid tensor dimensions");
-        KASSERT(dims_[1] == other.dims_[0], "Cannot multiply with different inner dimensions");
-        
+        KASSERT(dims_[1] == other.dims_[0],
+                "Cannot multiply with different inner dimensions");
+
         Tensor tmp(dims_[0], other.dims_[1]);
-        
-        for ( int i = 0; i < dims_[0]; i++ ) {
-            for ( int j = 0; j < other.dims_[1]; j++) {
-                for ( int k = 0; k < dims_[1]; k++ ) {
-                    tmp(i, j) += (*this)(i,k) * other(k,j);
+
+        for (int i = 0; i < dims_[0]; i++) {
+            for (int j = 0; j < other.dims_[1]; j++) {
+                for (int k = 0; k < dims_[1]; k++) {
+                    tmp(i, j) += (*this)(i, k) * other(k, j);
                 }
             }
         }
-                
+
         return tmp;
     }
 
-    void Print()
-    {
+    void Print() {
         if (dims_.size() == 1) {
             printf("[ ");
             for (int i = 0; i < dims_[0]; i++) {
@@ -273,11 +254,9 @@ public:
         }
     }
 
-    void PrintShape()
-    {
+    void PrintShape() {
         printf("(");
-        for (unsigned int i = 0; i < dims_.size(); i++)
-        {
+        for (unsigned int i = 0; i < dims_.size(); i++) {
             printf("%d ", dims_[i]);
         }
         printf(")\n");
@@ -287,9 +266,8 @@ public:
     std::vector<float> data_;
 };
 
-
 class KerasLayer {
-public:
+  public:
     KerasLayer() {}
 
     virtual ~KerasLayer() {}
@@ -300,20 +278,17 @@ public:
 };
 
 class KerasLayerActivation : public KerasLayer {
-public:
-    enum ActivationType
-    {
+  public:
+    enum ActivationType {
         kLinear = 1,
         kRelu = 2,
         kSoftPlus = 3,
         kSigmoid = 4,
-	kTanh = 5,
-	kHardSigmoid = 6
+        kTanh = 5,
+        kHardSigmoid = 6
     };
 
-    KerasLayerActivation()
-    : activation_type_(ActivationType::kLinear)
-    {}
+    KerasLayerActivation() : activation_type_(ActivationType::kLinear) {}
 
     virtual ~KerasLayerActivation() {}
 
@@ -321,13 +296,12 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
     ActivationType activation_type_;
 };
 
 class KerasLayerDense : public KerasLayer {
-public:
+  public:
     KerasLayerDense() {}
 
     virtual ~KerasLayerDense() {}
@@ -336,8 +310,7 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
     Tensor weights_;
     Tensor biases_;
 
@@ -345,7 +318,7 @@ private:
 };
 
 class KerasLayerConvolution2d : public KerasLayer {
-public:
+  public:
     KerasLayerConvolution2d() {}
 
     virtual ~KerasLayerConvolution2d() {}
@@ -354,8 +327,7 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
     Tensor weights_;
     Tensor biases_;
 
@@ -363,7 +335,7 @@ private:
 };
 
 class KerasLayerFlatten : public KerasLayer {
-public:
+  public:
     KerasLayerFlatten() {}
 
     virtual ~KerasLayerFlatten() {}
@@ -372,15 +344,12 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
 };
 
 class KerasLayerElu : public KerasLayer {
-public:
-    KerasLayerElu()
-    : alpha_(1.0f)
-    {}
+  public:
+    KerasLayerElu() : alpha_(1.0f) {}
 
     virtual ~KerasLayerElu() {}
 
@@ -388,17 +357,13 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
     float alpha_;
 };
 
 class KerasLayerMaxPooling2d : public KerasLayer {
-public:
-    KerasLayerMaxPooling2d()
-    : pool_size_j_(0)
-    , pool_size_k_(0)
-    {}
+  public:
+    KerasLayerMaxPooling2d() : pool_size_j_(0), pool_size_k_(0) {}
 
     virtual ~KerasLayerMaxPooling2d() {}
 
@@ -406,14 +371,13 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
     unsigned int pool_size_j_;
     unsigned int pool_size_k_;
 };
 
 class KerasLayerLSTM : public KerasLayer {
-public:
+  public:
     KerasLayerLSTM() {}
 
     virtual ~KerasLayerLSTM() {}
@@ -422,8 +386,8 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-    bool Step(Tensor * x, Tensor *out, Tensor * ht_1, Tensor * ct_1);
+  private:
+    bool Step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1);
 
     Tensor Wi_;
     Tensor Ui_;
@@ -437,14 +401,14 @@ private:
     Tensor Wo_;
     Tensor Uo_;
     Tensor bo_;
-    
+
     KerasLayerActivation innerActivation_;
     KerasLayerActivation activation_;
     bool returnSequences;
 };
 
 class KerasLayerEmbedding : public KerasLayer {
-public:
+  public:
     KerasLayerEmbedding() {}
 
     virtual ~KerasLayerEmbedding() {}
@@ -453,16 +417,13 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-
+  private:
     Tensor weights_;
 };
 
 class KerasModel {
-public:
-
-    enum LayerType
-    {
+  public:
+    enum LayerType {
         kDense = 1,
         kConvolution2d = 2,
         kFlatten = 3,
@@ -473,13 +434,10 @@ public:
         kEmbedding = 8
     };
 
-    KerasModel()
-    {}
+    KerasModel() {}
 
-    virtual ~KerasModel()
-    {
-        for (unsigned int i = 0; i < layers_.size(); i++)
-        {
+    virtual ~KerasModel() {
+        for (unsigned int i = 0; i < layers_.size(); i++) {
             delete layers_[i];
         }
     }
@@ -488,22 +446,18 @@ public:
 
     virtual bool Apply(Tensor* in, Tensor* out);
 
-private:
-    std::vector<KerasLayer *> layers_;
+  private:
+    std::vector<KerasLayer*> layers_;
 };
 
 class KerasTimer {
-public:
+  public:
     KerasTimer() {}
 
-    void Start()
-    {
-        start_ = std::chrono::high_resolution_clock::now();
-    }
+    void Start() { start_ = std::chrono::high_resolution_clock::now(); }
 
-    double Stop()
-    {
-        std::chrono::time_point<std::chrono::high_resolution_clock> now = 
+    double Stop() {
+        std::chrono::time_point<std::chrono::high_resolution_clock> now =
             std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> diff = now - start_;
@@ -511,7 +465,7 @@ public:
         return diff.count();
     }
 
-private:
+  private:
     std::chrono::time_point<std::chrono::high_resolution_clock> start_;
 };
 
