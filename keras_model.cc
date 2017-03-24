@@ -560,7 +560,7 @@ bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out)
     for ( int s = 0; s < steps; s++ ) {
         Tensor x = in->Select(s);
         
-        KASSERT(step(&x, &lastOutput, &ht_1, &ct_1), "Failed to execute step");
+        KASSERT(Step(&x, &lastOutput, &ht_1, &ct_1), "Failed to execute step");
         
         if ( returnSequences ) {
             outputs.data_.insert(outputs.data_.end(), lastOutput.data_.begin(), lastOutput.data_.end());
@@ -613,7 +613,7 @@ bool KerasLayerEmbedding::Apply(Tensor* in, Tensor* out)
 }
 
 
-bool KerasLayerLSTM::step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
+bool KerasLayerLSTM::Step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
 {
     Tensor xi = x->Dot(Wi_) + bi_;
     Tensor xf = x->Dot(Wf_) + bf_;

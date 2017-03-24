@@ -423,7 +423,7 @@ public:
     virtual bool Apply(Tensor* in, Tensor* out);
 
 private:
-    bool step(Tensor * x, Tensor *out, Tensor * ht_1, Tensor * ct_1);
+    bool Step(Tensor * x, Tensor *out, Tensor * ht_1, Tensor * ct_1);
 
     Tensor Wi_;
     Tensor Ui_;
