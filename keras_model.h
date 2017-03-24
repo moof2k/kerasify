@@ -144,6 +144,10 @@ public:
         return data_[dims_[3] * (dims_[2] * (dims_[1] * i + j) + k) + l];
     }
 
+    inline void Fill(float value) {
+        std::fill(data_.begin(), data_.end(), value);
+    }
+
     void Print()
     {
         if (dims_.size() == 1) {
@@ -212,9 +216,6 @@ public:
 };
 
 namespace K {
-    inline void fill(Tensor* tensor, float value) {
-        std::fill(tensor->data_.begin(), tensor->data_.end(), value);
-    }
     
     inline Tensor unpack(const Tensor * tensor, int row) {
         KASSERT(tensor->dims_.size() >= 2, "Invalid tensor");
@@ -244,7 +245,6 @@ namespace K {
         KASSERT(a.dims_[1] == b.dims_[0], "Cannot multiply with different inner dimensions");
         
         Tensor tmp(a.dims_[0], b.dims_[1]);
-        K::fill(&tmp, 0.0);
         
         for ( int i = 0; i < a.dims_[0]; i++ ){
             for ( int j = 0; j < b.dims_[1]; j++) {

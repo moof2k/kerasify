@@ -540,13 +540,13 @@ bool KerasLayerLSTM::LoadLayer(std::ifstream* file)
 
 bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out)
 {
-    /*lets assume bo always keeps the output shape and we will always recive one single sample */
+    /* Assume bo always keeps the output shape and we will always receive one single sample. */
     int outputDim = bo_.dims_[1];
     Tensor ht_1 = Tensor(1, outputDim);
     Tensor ct_1 = Tensor(1, outputDim);
     
-    K::fill(&ht_1, 0.0);
-    K::fill(&ct_1, 0.0);
+    ht_1.Fill(0.0f);
+    ct_1.Fill(0.0f);
     
     int steps = in->dims_[0];
     
@@ -557,21 +557,21 @@ bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out)
         outputs.data_.reserve(steps*outputDim);
     }
     
-    for ( int s = 0; s < steps; s++ ){
+    for ( int s = 0; s < steps; s++ ) {
         Tensor x = K::select(in, s);
         
-//         bool success = 
         KASSERT(step(&x, &lastOutput, &ht_1, &ct_1), "Failed to execute step");
         
-        if ( returnSequences ){
+        if ( returnSequences ) {
             outputs.data_.insert(outputs.data_.end(), lastOutput.data_.begin(), lastOutput.data_.end());
         }
     }
     
-    if (returnSequences)
+    if (returnSequences) {
         *out = outputs;
-    else
+    } else {
         *out = lastOutput;
+    }
     
     return true;
 }
