@@ -6,8 +6,10 @@ KERAS=keras_model.o
 TESTS=keras_model_test
 
 %.o: %.cc
+ifneq ($(static_analysis),false)
 	cppcheck --error-exitcode=1 $<
 	clang-tidy $< -checks=clang-analyzer-*,readability-*,performance-* -- $(CFLAGS)
+endif
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 %_test: %_test.o $(KERAS)
