@@ -615,16 +615,15 @@ bool KerasLayerEmbedding::Apply(Tensor* in, Tensor* out)
 
 bool KerasLayerLSTM::step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
 {
-    Tensor xi = K::add(x->Dot(Wi_), bi_);
-    Tensor xf = K::add(x->Dot(Wf_), bf_);
-    Tensor xc = K::add(x->Dot(Wc_), bc_);
-    Tensor xo = K::add(x->Dot(Wo_), bo_);
+    Tensor xi = x->Dot(Wi_) + bi_;
+    Tensor xf = x->Dot(Wf_) + bf_;
+    Tensor xc = x->Dot(Wc_) + bc_;
+    Tensor xo = x->Dot(Wo_) + bo_;
     
-    Tensor i_ = K::add(xi, ht_1->Dot(Ui_));
-    Tensor f_ = K::add(xf, ht_1->Dot(Uf_));
-    Tensor c_ = K::add(xc, ht_1->Dot(Uc_));
-    Tensor o_ = K::add(xo, ht_1->Dot(Uo_));
-    
+    Tensor i_ = xi + ht_1->Dot(Ui_);
+    Tensor f_ = xf + ht_1->Dot(Uf_);
+    Tensor c_ = xc + ht_1->Dot(Uc_);
+    Tensor o_ = xo + ht_1->Dot(Uo_);
     
     Tensor i, f, cc, o;
     
@@ -633,9 +632,8 @@ bool KerasLayerLSTM::step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
     KASSERT(activation_.Apply(&c_, &cc), "Failed to apply activation on c_");
     KASSERT(innerActivation_.Apply(&o_, &o), "Failed to apply inner activation on o");
     
-    *ct_1 = K::add(K::mult(f, *ct_1), K::mult(i, cc));
+    *ct_1 = K::mult(f, *ct_1) + K::mult(i, cc);
    
-    
     KASSERT(activation_.Apply(ct_1, &cc), "Failed to apply activation on c");
     *out = *ht_1 = K::mult(o, cc);
     
