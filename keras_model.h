@@ -186,6 +186,22 @@ public:
         return result;
     }
 
+    Tensor Multiply(const Tensor& other) {
+        KASSERT(dims_== other.dims_, "Cannot multiply elements with different dimensions");
+        
+        Tensor result;
+        result.dims_ = dims_;
+        result.data_.reserve(data_.size());
+        
+        std::transform(data_.begin(), data_.end(), other.data_.begin(),
+            std::back_inserter(result.data_),
+            [](float x, float y) {
+                return x * y;
+            });
+        
+        return result;
+    }
+
     Tensor Dot(const Tensor& other) {
         KDEBUG(dims_.size() == 2, "Invalid tensor dimensions");
         KDEBUG(other.dims_.size() == 2, "Invalid tensor dimensions");
@@ -270,21 +286,6 @@ public:
     std::vector<int> dims_;
     std::vector<float> data_;
 };
-
-namespace K {
-    
-    inline Tensor mult(const Tensor & a, const Tensor & b) {
-        KASSERT(a.dims_== b.dims_, "Cannot multipy elements with different dimensions");
-        
-        Tensor result;
-        result.dims_ = a.dims_;
-        result.data_.reserve(a.data_.size());
-        
-        std::transform(a.data_.begin(), a.data_.end(), b.data_.begin(), std::back_inserter(result.data_), [](float x, float y){return x*y;});
-        
-        return result;
-    }
-}
 
 
 class KerasLayer {

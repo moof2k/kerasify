@@ -106,6 +106,17 @@ bool tensor_test()
         Tensor result = a + b;
         KASSERT(result.data_ == std::vector<float>({3.0, 7.0, 7.0, 6.0}), "Vector add failed");
     }
+
+    {
+        Tensor a(2, 2);
+        Tensor b(2, 2);
+        
+        a.data_ = {1.0, 2.0, 3.0, 5.0};
+        b.data_ = {2.0, 5.0, 4.0, 1.0};
+        
+        Tensor result = a.Multiply(b);
+        KASSERT(result.data_ == std::vector<float>({2.0, 10.0, 12.0, 5.0}), "Vector multiply failed");
+    }
     
     {
         Tensor a(1, 2);

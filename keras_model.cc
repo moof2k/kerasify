@@ -632,10 +632,10 @@ bool KerasLayerLSTM::step(Tensor* x, Tensor* out, Tensor* ht_1, Tensor* ct_1)
     KASSERT(activation_.Apply(&c_, &cc), "Failed to apply activation on c_");
     KASSERT(innerActivation_.Apply(&o_, &o), "Failed to apply inner activation on o");
     
-    *ct_1 = K::mult(f, *ct_1) + K::mult(i, cc);
+    *ct_1 = f.Multiply(*ct_1) + i.Multiply(cc);
    
     KASSERT(activation_.Apply(ct_1, &cc), "Failed to apply activation on c");
-    *out = *ht_1 = K::mult(o, cc);
+    *out = *ht_1 = o.Multiply(cc);
     
     return true;
 }
