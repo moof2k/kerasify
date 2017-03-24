@@ -7,6 +7,7 @@ TESTS=keras_model_test
 
 %.o: %.cc
 	cppcheck --error-exitcode=1 $<
+	clang-tidy $< -checks=clang-analyzer-*,readability-* -- $(CFLAGS)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 %_test: %_test.o $(KERAS)

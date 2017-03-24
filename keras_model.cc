@@ -101,21 +101,22 @@ bool KerasLayerActivation::Apply(Tensor* in, Tensor* out) {
         for (size_t i = 0; i < out->data_.size(); i++) {
             float x = (out->data_[i] * 0.2) + 0.5;
 
-            if (x <= 0)
+            if (x <= 0) {
                 out->data_[i] = 0.0;
-            else if (x >= 1)
+            } else if (x >= 1) {
                 out->data_[i] = 1.0;
-            else
+            } else {
                 out->data_[i] = x;
+            }
         }
         break;
     case kSigmoid:
         for (size_t i = 0; i < out->data_.size(); i++) {
             float& x = out->data_[i];
 
-            if (x >= 0)
+            if (x >= 0) {
                 out->data_[i] = 1.0 / (1.0 + std::exp(-x));
-            else {
+            } else {
                 float z = std::exp(x);
                 out->data_[i] = z / (1.0 + z);
             }
@@ -443,7 +444,7 @@ bool KerasLayerLSTM::LoadLayer(std::ifstream* file) {
     KASSERT(ReadUnsignedInt(file, &bo_shape), "Expected bo shape");
     KASSERT(bo_shape > 0, "Invalid bo shape");
 
-    /* Load Input Weights and Biases */
+    // Load Input Weights and Biases
     Wi_.Resize(wi_rows, wi_cols);
     KASSERT(ReadFloats(file, Wi_.data_.data(), wi_rows * wi_cols),
             "Expected Wi weights");
@@ -455,7 +456,7 @@ bool KerasLayerLSTM::LoadLayer(std::ifstream* file) {
     bi_.Resize(1, bi_shape);
     KASSERT(ReadFloats(file, bi_.data_.data(), bi_shape), "Expected bi biases");
 
-    /* Load Forget Weights and Biases */
+    // Load Forget Weights and Biases
     Wf_.Resize(wf_rows, wf_cols);
     KASSERT(ReadFloats(file, Wf_.data_.data(), wf_rows * wf_cols),
             "Expected Wf weights");
@@ -467,7 +468,7 @@ bool KerasLayerLSTM::LoadLayer(std::ifstream* file) {
     bf_.Resize(1, bf_shape);
     KASSERT(ReadFloats(file, bf_.data_.data(), bf_shape), "Expected bf biases");
 
-    /* Load State Weights and Biases */
+    // Load State Weights and Biases
     Wc_.Resize(wc_rows, wc_cols);
     KASSERT(ReadFloats(file, Wc_.data_.data(), wc_rows * wc_cols),
             "Expected Wc weights");
@@ -479,7 +480,7 @@ bool KerasLayerLSTM::LoadLayer(std::ifstream* file) {
     bc_.Resize(1, bc_shape);
     KASSERT(ReadFloats(file, bc_.data_.data(), bc_shape), "Expected bc biases");
 
-    /* Load Output Weights and Biases */
+    // Load Output Weights and Biases
     Wo_.Resize(wo_rows, wo_cols);
     KASSERT(ReadFloats(file, Wo_.data_.data(), wo_rows * wo_cols),
             "Expected Wo weights");
@@ -498,14 +499,14 @@ bool KerasLayerLSTM::LoadLayer(std::ifstream* file) {
     unsigned int return_sequences = 0;
     KASSERT(ReadUnsignedInt(file, &return_sequences),
             "Expected return_sequences param");
-    returnSequences = return_sequences;
+    return_sequences_ = (bool)return_sequences;
 
     return true;
 }
 
 bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out) {
-    /* Assume bo always keeps the output shape and we will always receive one
-     * single sample. */
+    // Assume bo always keeps the output shape and we will always receive one
+    // single sample.
     int outputDim = bo_.dims_[1];
     Tensor ht_1 = Tensor(1, outputDim);
     Tensor ct_1 = Tensor(1, outputDim);
@@ -517,7 +518,7 @@ bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out) {
 
     Tensor outputs, lastOutput;
 
-    if (returnSequences) {
+    if (return_sequences_) {
         outputs.dims_ = {steps, outputDim};
         outputs.data_.reserve(steps * outputDim);
     }
@@ -527,13 +528,13 @@ bool KerasLayerLSTM::Apply(Tensor* in, Tensor* out) {
 
         KASSERT(Step(&x, &lastOutput, &ht_1, &ct_1), "Failed to execute step");
 
-        if (returnSequences) {
+        if (return_sequences_) {
             outputs.data_.insert(outputs.data_.end(), lastOutput.data_.begin(),
                                  lastOutput.data_.end());
         }
     }
 
-    if (returnSequences) {
+    if (return_sequences_) {
         *out = outputs;
     } else {
         *out = lastOutput;
@@ -652,7 +653,13 @@ bool KerasModel::LoadModel(const std::string& filename) {
 
         KASSERT(layer, "Unknown layer type %d", layer_type);
 
-        KASSERT(layer->LoadLayer(&file), "Failed to load layer %d", i);
+        bool result = layer->LoadLayer(&file);
+        if (!result) {
+            printf("Failed to load layer %d", i);
+            delete layer;
+            return false;
+        }
+
         layers_.push_back(layer);
     }
 

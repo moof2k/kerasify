@@ -378,7 +378,7 @@ class KerasLayerMaxPooling2d : public KerasLayer {
 
 class KerasLayerLSTM : public KerasLayer {
   public:
-    KerasLayerLSTM() {}
+    KerasLayerLSTM() : return_sequences_(false) {}
 
     virtual ~KerasLayerLSTM() {}
 
@@ -404,7 +404,7 @@ class KerasLayerLSTM : public KerasLayer {
 
     KerasLayerActivation innerActivation_;
     KerasLayerActivation activation_;
-    bool returnSequences;
+    bool return_sequences_;
 };
 
 class KerasLayerEmbedding : public KerasLayer {
