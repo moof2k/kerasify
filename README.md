@@ -32,6 +32,8 @@ model.add(Dense(1, input_dim=10))
 model.compile(loss='mean_squared_error', optimizer='adamax')
 model.fit(test_x, test_y, nb_epoch=1, verbose=False)
 
+print model.predict(np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]))
+
 from kerasify import export_model
 export_model(model, 'example.model')
 ```
@@ -40,9 +42,9 @@ test.cc:
 
 ```
 #include "keras_model.h"
+#include <assert.h>
 
-int main()
-{
+int main() {
     // Initialize model.
     KerasModel model;
     bool result = model.LoadModel("example.model");
@@ -54,16 +56,20 @@ int main()
     // Run prediction.
     Tensor out;
     result = model.Apply(&in, &out);
+    assert(result);
+    out.Print();
     return 0;
 }
 ```
 
 To test:
 
-```
-$ python make_model.py
-$ g++ --std=c++11 -Wall -Werror -O3 test.cc keras_model.cc
-```
+    $ python make_model.py
+    [[-1.85735667]]
+
+    $ g++ --std=c++11 -Wall -O3 test.cc keras_model.cc
+    $ ./a.out 
+    [ -1.857357 ]
 
 # Unit tests
 
