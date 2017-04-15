@@ -42,12 +42,11 @@ test.cc:
 
 ```
 #include "keras_model.h"
-#include <assert.h>
 
 int main() {
     // Initialize model.
     KerasModel model;
-    bool result = model.LoadModel("example.model");
+    model.LoadModel("example.model");
 
     // Create a 1D Tensor for input data.
     Tensor in(1);
@@ -55,8 +54,7 @@ int main() {
 
     // Run prediction.
     Tensor out;
-    result = model.Apply(&in, &out);
-    assert(result);
+    model.Apply(&in, &out);
     out.Print();
     return 0;
 }
