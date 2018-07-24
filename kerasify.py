@@ -125,26 +125,29 @@ def export_model(model, filename):
                 f.write(struct.pack('I', pool_size[1]))
 
             elif layer_type == 'LSTM':
-                inner_activation = layer.get_config()['inner_activation']
+                recurrent_activation = layer.get_config()['recurrent_activation']
                 activation = layer.get_config()['activation']
                 return_sequences = int(layer.get_config()['return_sequences'])
 
-                weights = layer.get_weights()
-                W_i = weights[0]
-                U_i = weights[1]
-                b_i = weights[2]
+                W = model.layers[0].get_weights()[0]
+                U = model.layers[0].get_weights()[1]
+                b = model.layers[0].get_weights()[2]
+                num_units = int(int(model.layers[0].trainable_weights[0].shape[1])/4)
 
-                W_c = weights[3]
-                U_c = weights[4]
-                b_c = weights[5]
+                W_i = W[:, :num_units]
+                W_f = W[:, num_units: num_units * 2]
+                W_c = W[:, num_units * 2: num_units * 3]
+                W_o = W[:, num_units * 3:]
 
-                W_f = weights[6]
-                U_f = weights[7]
-                b_f = weights[8]
+                U_i = U[:, :num_units]
+                U_f = U[:, num_units: num_units * 2]
+                U_c = U[:, num_units * 2: num_units * 3]
+                U_o = U[:, num_units * 3:]
 
-                W_o = weights[9]
-                U_o = weights[10]
-                b_o = weights[11]
+                b_i = b[:num_units]
+                b_f = b[num_units: num_units * 2]
+                b_c = b[num_units * 2: num_units * 3]
+                b_o = b[num_units * 3:]
 
                 f.write(struct.pack('I', LAYER_LSTM))
                 f.write(struct.pack('I', W_i.shape[0]))
@@ -197,7 +200,7 @@ def export_model(model, filename):
                 write_floats(f, U_o)
                 write_floats(f, b_o)
 
-                write_activation(inner_activation)
+                write_activation(recurrent_activation)
                 write_activation(activation)
                 f.write(struct.pack('I', return_sequences))
 
